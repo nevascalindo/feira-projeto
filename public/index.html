@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogo LDR + Ranking</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Desafio do Laser</h1>
+      <nav>
+        <button id="tab-game" class="tab active">Jogo</button>
+        <button id="tab-board" class="tab">Ranking</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="game" class="section active">
+        <div class="card">
+          <h2>Jogo</h2>
+          <div class="form-row">
+            <label for="player-name">Seu nome</label>
+            <input type="text" id="player-name" placeholder="Digite seu nome" maxlength="40" />
+          </div>
+          <div class="form-row actions">
+            <button id="start-btn" class="primary">Iniciar (2 min)</button>
+            <button id="finish-btn" class="secondary" disabled>Finalizar</button>
+            <button id="reset-btn" class="ghost" disabled>Resetar</button>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="label">Tempo</div>
+              <div class="value" id="time-display">00:00.000</div>
+            </div>
+            <div class="stat">
+              <div class="label">Penalidades</div>
+              <div class="value" id="penalties-display">0 × +5s</div>
+            </div>
+            <div class="stat">
+              <div class="label">Tempo total</div>
+              <div class="value" id="total-display">00:00.000</div>
+            </div>
+          </div>
+          <p class="hint">Cada interrupção de luz do Arduino adiciona +5 segundos ao tempo final.</p>
+          <div id="status" class="status">Aguardando início…</div>
+        </div>
+      </section>
+
+      <section id="board" class="section">
+        <div class="card">
+          <h2>Ranking</h2>
+          <div class="board-actions">
+            <button id="refresh-board" class="ghost">Atualizar</button>
+          </div>
+          <div id="board-list" class="board-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Arduino + Node.js + Socket.IO</span>
+    </footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+  
+</body>
+</html>
+
+
