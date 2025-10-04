@@ -134,7 +134,7 @@ if (SerialPort && SERIAL_PORT_PATH) {
       const msg = String(line).trim();
       console.log(`[Arduino] ${msg}`);
       const upper = msg.toUpperCase();
-      const isInt = upper === 'INT' || upper === 'INTERRUPT' || upper.includes('STATE: DARK');
+      const isInt = upper === 'INT' || upper === 'INTERRUPT';
       if (isInt) {
         io.emit('interrupt', { at: Date.now() });
         console.log('[Game] Penalidade: +5s (interrupt detectado)');

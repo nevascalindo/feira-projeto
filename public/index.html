@@ -3,59 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jogo LDR + Ranking</title>
+  <title>Laser Maze</title>
   <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div class="laser-grid"></div>
   <div class="container">
     <header>
-      <h1>Desafio do Laser</h1>
+      <h1 class="title-007">LASER MAZE</h1>
+      <div class="subtitle">Missão: Evite os feixes de laser</div>
       <nav>
-        <button id="tab-game" class="tab active">Jogo</button>
-        <button id="tab-board" class="tab">Ranking</button>
+        <button id="tab-game" class="tab active">🎯 Missão</button>
+        <button id="tab-board" class="tab">🏆 Ranking</button>
       </nav>
     </header>
 
     <main>
       <section id="game" class="section active">
-        <div class="card">
-          <h2>Jogo</h2>
+        <div class="card mission-card">
+          <h2>🎯 Missão Secreta</h2>
           <div class="form-row">
-            <label for="player-name">Seu nome</label>
-            <input type="text" id="player-name" placeholder="Digite seu nome" maxlength="40" />
+            <label for="player-name">Código do Agente</label>
+            <input type="text" id="player-name" placeholder="Digite seu código de agente" maxlength="40" />
           </div>
           <div class="form-row actions">
-            <button id="start-btn" class="primary">Iniciar (2 min)</button>
-            <button id="finish-btn" class="secondary" disabled>Finalizar</button>
-            <button id="reset-btn" class="ghost" disabled>Resetar</button>
+            <button id="start-btn" class="primary">🚀 Iniciar Missão (2 min)</button>
+            <button id="finish-btn" class="secondary" disabled>✅ Finalizar</button>
+            <button id="reset-btn" class="ghost" disabled>🔄 Resetar</button>
+            <button id="test-sound-btn" class="ghost">🔊 Testar Som</button>
           </div>
+          <!-- Timer Principal para Telão -->
+          <div class="main-timer-container">
+            <div class="main-timer">
+              <div class="timer-label">TEMPO ATUAL</div>
+              <div class="timer-display" id="time-display">00:00.000</div>
+            </div>
+          </div>
+          
           <div class="stats">
             <div class="stat">
-              <div class="label">Tempo</div>
-              <div class="value" id="time-display">00:00.000</div>
-            </div>
-            <div class="stat">
-              <div class="label">Penalidades</div>
+              <div class="label">⚠️ Alertas</div>
               <div class="value" id="penalties-display">0 × +5s</div>
             </div>
             <div class="stat">
-              <div class="label">Tempo total</div>
+              <div class="label">🎯 Tempo Final</div>
               <div class="value" id="total-display">00:00.000</div>
             </div>
           </div>
-          <p class="hint">Cada interrupção de luz do Arduino adiciona +5 segundos ao tempo final.</p>
+          <p class="hint">⚠️ Cada toque no feixe de laser adiciona +5 segundos à sua missão!</p>
           <div id="status" class="status">Aguardando início…</div>
         </div>
       </section>
 
       <section id="board" class="section">
-        <div class="card">
-          <h2>Ranking</h2>
+        <div class="card ranking-card">
+          <h2>🏆 Hall da Fama</h2>
           <div class="board-actions">
-            <button id="refresh-board" class="ghost">Atualizar</button>
+            <button id="refresh-board" class="ghost">🔄 Atualizar</button>
           </div>
           <div id="board-list" class="board-list"></div>
         </div>
@@ -63,7 +70,7 @@
     </main>
 
     <footer>
-      <span>Arduino + Node.js + Socket.IO</span>
+      <span>🔬 Sistema de Detecção Laser - Arduino + Node.js + Socket.IO</span>
     </footer>
   </div>
 

@@ -32,6 +32,54 @@
   const penaltyMs = 5000;
   const maxDurationMs = 2 * 60 * 1000; // 2 minutes
 
+  // Audio context for alarm sound
+  let audioContext = null;
+  
+  function initAudio() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
+  
+  function playAlarmSound() {
+    try {
+      initAudio();
+      
+      // Create multiple oscillators for a more realistic alarm sound
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      // Connect nodes
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      // Configure the sound - two frequencies for a more alarm-like sound
+      oscillator1.frequency.setValueAtTime(800, audioContext.currentTime); // High frequency
+      oscillator1.type = 'sine';
+      
+      oscillator2.frequency.setValueAtTime(1000, audioContext.currentTime); // Even higher frequency
+      oscillator2.type = 'sine';
+      
+      // Create envelope for the "piii" effect - quick and sharp
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.02); // Very quick attack
+      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1); // Quick decay
+      gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3); // Short duration
+      
+      // Play the sound
+      oscillator1.start(audioContext.currentTime);
+      oscillator1.stop(audioContext.currentTime + 0.3);
+      
+      oscillator2.start(audioContext.currentTime);
+      oscillator2.stop(audioContext.currentTime + 0.3);
+      
+    } catch (error) {
+      console.warn('Could not play alarm sound:', error);
+    }
+  }
+
   function formatMs(ms){
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
@@ -62,11 +110,11 @@
 
   function start(){
     const name = (nameInput.value || '').trim();
-    if (!name) { alert('Digite seu nome antes de iniciar.'); return; }
+    if (!name) { alert('⚠️ Digite seu código de agente antes de iniciar a missão.'); return; }
     startTime = Date.now();
     penalties = 0;
     setRunning(true);
-    statusEl.textContent = 'Contando…';
+    statusEl.textContent = '🎯 Missão em andamento... Evite os feixes de laser!';
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       updateDisplays();
@@ -86,7 +134,7 @@
     clearInterval(timerInterval);
     timerInterval = null;
     setRunning(false);
-    statusEl.textContent = 'Finalizado! Salvando resultado…';
+    statusEl.textContent = '✅ Missão finalizada! Salvando resultado no sistema...';
     try {
       const res = await fetch('/api/leaderboard', {
         method: 'POST',
@@ -95,11 +143,11 @@
       });
       if (!res.ok) throw new Error('Falha ao salvar');
       await res.json();
-      statusEl.textContent = `Tempo salvo: ${formatMs(finalTime)}`;
+      statusEl.textContent = `🎉 Missão registrada: ${formatMs(finalTime)} - Verifique o Hall da Fama!`;
       switchTab('board');
     } catch (err) {
       console.error(err);
-      statusEl.textContent = 'Não foi possível salvar.';
+      statusEl.textContent = '❌ Erro no sistema. Não foi possível salvar a missão.';
     } finally {
       startTime = null;
       updateDisplays();
@@ -111,7 +159,7 @@
     timerInterval = null;
     startTime = null;
     penalties = 0;
-    statusEl.textContent = 'Aguardando início…';
+    statusEl.textContent = '🔄 Sistema pronto. Aguardando nova missão...';
     setRunning(false);
     updateDisplays();
   }
@@ -119,6 +167,17 @@
   startBtn.addEventListener('click', start);
   finishBtn.addEventListener('click', finish);
   resetBtn.addEventListener('click', reset);
+  
+  // Test sound button
+  const testSoundBtn = document.getElementById('test-sound-btn');
+  testSoundBtn.addEventListener('click', () => {
+    playAlarmSound();
+    statusEl.textContent = '🔊 Som de alarme testado!';
+    setTimeout(() => { 
+      if (startTime == null) statusEl.textContent = '🔄 Sistema pronto. Aguardando nova missão...';
+      else statusEl.textContent = '🎯 Missão em andamento... Evite os feixes de laser!';
+    }, 1000);
+  });
 
   if (socket) {
     socket.on('connect', () => {
@@ -128,9 +187,19 @@
       if (startTime != null) {
         penalties += 1;
         updateDisplays();
+        
+        // Play alarm sound
+        playAlarmSound();
+        
+        // Flash effect on the entire page
+        document.body.style.background = 'radial-gradient(ellipse at center, #ff0000 0%, #000000 100%)';
+        setTimeout(() => {
+          document.body.style.background = 'radial-gradient(ellipse at center, #0a0a0a 0%, #000000 100%)';
+        }, 200);
+        
         // Small flash effect in status
-        statusEl.textContent = `Interrupção detectada (+5s)! Total: ${penalties}`;
-        setTimeout(() => { if (startTime != null) statusEl.textContent = 'Contando…'; }, 1200);
+        statusEl.textContent = `⚠️ ALERTA! Feixe de laser tocado (+5s)! Total de alertas: ${penalties}`;
+        setTimeout(() => { if (startTime != null) statusEl.textContent = '🎯 Missão em andamento... Evite os feixes de laser!'; }, 1200);
       }
     });
   } else {
@@ -143,29 +212,44 @@
   refreshBtn.addEventListener('click', loadBoard);
 
   async function loadBoard(){
-    boardList.innerHTML = '<div class="hint">Carregando…</div>';
+    boardList.innerHTML = '<div class="hint">🔄 Carregando dados do Hall da Fama...</div>';
     try {
       const res = await fetch('/api/leaderboard');
       const data = await res.json();
       renderBoard(data);
     } catch (e) {
-      boardList.innerHTML = '<div class="hint">Erro ao carregar.</div>';
+      boardList.innerHTML = '<div class="hint">❌ Erro ao carregar o Hall da Fama.</div>';
     }
   }
 
   function renderBoard(items){
     if (!items.length) {
-      boardList.innerHTML = '<div class="hint">Sem resultados ainda. Jogue para aparecer aqui!</div>';
+      boardList.innerHTML = '<div class="hint">🚀 Nenhuma missão completada ainda. Seja o primeiro agente a completar o desafio!</div>';
       return;
     }
     boardList.innerHTML = '';
     items.forEach((it, index) => {
       const row = document.createElement('div');
-      row.className = 'row';
+      const position = index + 1;
+      
+      // Add special classes for top 3
+      if (position <= 3) {
+        row.className = `row top-3 position-${position}`;
+      } else {
+        row.className = 'row';
+      }
 
       const nameCol = document.createElement('div');
       nameCol.className = 'name';
-      nameCol.textContent = `${index+1}. ${it.name}`;
+      
+      // Add special icons for top 3
+      let positionIcon = '';
+      if (position === 1) positionIcon = '🥇 ';
+      else if (position === 2) positionIcon = '🥈 ';
+      else if (position === 3) positionIcon = '🥉 ';
+      else positionIcon = `${position}. `;
+      
+      nameCol.textContent = `${positionIcon}${it.name}`;
 
       const timeCol = document.createElement('div');
       timeCol.className = 'time';
@@ -176,9 +260,9 @@
 
       const editBtn = document.createElement('button');
       editBtn.className = 'ghost';
-      editBtn.textContent = 'Editar nome';
+      editBtn.textContent = '✏️ Editar';
       editBtn.addEventListener('click', async () => {
-        const newName = prompt('Novo nome:', it.name);
+        const newName = prompt('Novo código do agente:', it.name);
         if (newName == null) return;
         const name = newName.trim();
         if (!name) return;
@@ -192,9 +276,9 @@
 
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'danger';
-      deleteBtn.textContent = 'Apagar';
+      deleteBtn.textContent = '🗑️ Apagar';
       deleteBtn.addEventListener('click', async () => {
-        if (!confirm('Tem certeza que deseja apagar este registro?')) return;
+        if (!confirm('⚠️ Tem certeza que deseja apagar este registro da base de dados?')) return;
         await fetch(`/api/leaderboard/${it.id}`, { method: 'DELETE' });
         loadBoard();
       });

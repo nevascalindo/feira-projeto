@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "start:arduino": "cross-env SERIAL_PORT=COM3 SERIAL_BAUD_RATE=9600 node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
