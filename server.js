@@ -134,13 +134,15 @@ if (SerialPort && SERIAL_PORT_PATH) {
       const msg = String(line).trim();
       console.log(`[Arduino] ${msg}`);
       const upper = msg.toUpperCase();
-      const isInt = upper === 'INT' || upper === 'INTERRUPT';
+      const isInt = upper === 'INT' || upper === 'INTERRUPT' || upper === 'INT1' || upper === 'INT2';
       if (isInt) {
-        io.emit('interrupt', { at: Date.now() });
-        console.log('[Game] Penalidade: +5s (interrupt detectado)');
-      } else if (upper.startsWith('STATE:')) {
-        const state = msg.split(':')[1]?.trim();
-        if (state) console.log(`[Sensor] Estado: ${state}`);
+        io.emit('interrupt', { at: Date.now(), source: upper });
+        console.log(`[Game] Penalidade: +5s (interrupt detectado - ${upper})`);
+      } else if (upper.startsWith('STATE1:') || upper.startsWith('STATE2:')) {
+        const parts = msg.split(':');
+        const sensorNum = parts[0].replace('STATE', '');
+        const state = parts[1]?.trim();
+        if (state) console.log(`[Sensor${sensorNum}] Estado: ${state}`);
       }
     });
 
